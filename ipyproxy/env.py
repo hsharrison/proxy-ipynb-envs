@@ -31,7 +31,7 @@ class IPythonEnvironment:
 
     @property
     def url(self):
-        return '{}{}/'.format(app.config.APPLICATION_ROOT, self.name)
+        return '{}{}/'.format(app.config.BASE_URL, self.name)
 
     @property
     def pid_path(self):
