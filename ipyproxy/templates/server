@@ -1,4 +1,4 @@
-location {{ app.config.BASE_URL }} {
+location {{ app.config.APPLICATION_ROOT }} {
   proxy_pass      {{ app.config.PREFERRED_URL_SCHEME }}://{{ app.config.SERVER_NAME }}/;
   proxy_redirect  default;
 
