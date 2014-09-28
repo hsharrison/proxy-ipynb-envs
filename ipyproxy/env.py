@@ -7,6 +7,10 @@ from flask import render_template
 from ipyproxy import app, nginx
 
 
+class BrokenInvariant(RuntimeError):
+    pass
+
+
 class IPythonEnvironment:
     def __init__(self, env_dir, port=None, scheme='http', name=None, profile_args=None):
         self.dir = env_dir.rstrip('/')
@@ -31,12 +35,32 @@ class IPythonEnvironment:
     def location_path(self):
         return path.join(app.instance_path, self.name, 'location')
 
+    def resolve_invariants(self):
+        # Does the profile exist?
+        try:
+            self.get_profile_path()
+            # Yes.
+        except BrokenInvariant:
+            # No.
+            self.create_profile()
+
+        # Is the notebook server running?
+        try:
+            self.port = self.get_port()
+            # Yes.
+        except BrokenInvariant:
+            # No.
+            self.launch_server()
+
+        # Port could have been changed, may as well rewrite config and reload nginx.
+        self.write_location()
+
     def get_pid(self):
         try:
             with open(self.pid_path, 'r') as file:
-                return file.read()
+                return int(file.read().strip())
         except FileNotFoundError:
-            raise RuntimeError('{] assumed to exist but does not'.format(self.pid_path))
+            raise BrokenInvariant('{] assumed to exist but does not'.format(self.pid_path))
 
     def get_profile_path(self):
         try:
@@ -45,7 +69,7 @@ class IPythonEnvironment:
                 universal_newlines=True
             )).strip()
         except subprocess.CalledProcessError:
-            raise RuntimeError(
+            raise BrokenInvariant(
                 '{} profile locate {} failed: The profile was assumed to exist and does not'.format(
                     self.ipython_bin, self.name))
 
@@ -92,9 +116,9 @@ class IPythonEnvironment:
                 universal_newlines=True
             ))
         except subprocess.CalledProcessError:
-            raise RuntimeError(
+            raise BrokenInvariant(
                 '{} notebook list --profile {} failed: The server was assumed to be running and it was not'.format(
                     self.ipython_bin, self.name)
             )
 
-        return re.match(r'https?://[\da-z\.-]+:(\d*)/', notebook_list.split()[1]).group()
+        return int(re.match(r'https?://[\da-z\.-]+:(\d*)/', notebook_list.split()[1]).group(1))

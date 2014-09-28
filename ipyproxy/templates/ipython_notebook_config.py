@@ -6,4 +6,3 @@ c.NotebookApp.trust_xheaders = True
 c.NotebookApp.webapp_setting = {
     'static_url_prefix': '{{ env.url }}'
 }
-c.NotebookApp.port = {{ env.port }}
