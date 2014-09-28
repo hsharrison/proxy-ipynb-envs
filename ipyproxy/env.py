@@ -1,4 +1,5 @@
-from os import path
+from os import path, kill
+from signal import SIGINT
 import subprocess
 import re
 
@@ -108,6 +109,9 @@ class IPythonEnvironment:
 
         with open(self.pid_path, 'w') as f:
             f.write(str(proc.pid))
+
+    def stop_server(self):
+        kill(self.get_pid(), SIGINT)
 
     def get_port(self):
         try:
