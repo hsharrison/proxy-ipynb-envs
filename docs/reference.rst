@@ -1,6 +1,0 @@
-=========
-Reference
-=========
-
-.. automodule:: proxy
-    :members:
