@@ -1,4 +1,4 @@
-from os import path, kill
+from os import path, kill, access, X_OK
 from signal import SIGINT
 import subprocess
 import re
@@ -12,6 +12,10 @@ class BrokenInvariant(RuntimeError):
     pass
 
 
+class NotAnEnvironment(ValueError):
+    pass
+
+
 class IPythonEnvironment:
     def __init__(self, env_dir, port=None, scheme='http', name=None, profile_args=None):
         self.dir = env_dir.rstrip('/')
@@ -22,6 +26,7 @@ class IPythonEnvironment:
         self.scheme = scheme
         self.profile_args = list(profile_args) if profile_args else []
 
+        self.validate_dir()
         self.resolve_invariants()
 
     @property
@@ -35,6 +40,10 @@ class IPythonEnvironment:
     @property
     def location_path(self):
         return path.join(app.instance_path, self.name, 'location')
+
+    def validate_dir(self):
+        if not (path.isfile(self.ipython_bin) and access(self.ipython_bin, X_OK)):
+            raise NotAnEnvironment(self.dir)
 
     def resolve_invariants(self):
         # Does the profile exist?
