@@ -17,7 +17,7 @@ class NotAnEnvironment(ValueError):
 
 
 class IPythonEnvironment:
-    def __init__(self, env_dir, port=None, scheme='http', name=None, profile_args=None):
+    def __init__(self, env_dir, port=None, scheme='http', name=None, profile_args=None, static_dir=None):
         self.dir = env_dir.rstrip('/')
         self.name = name or path.basename(self.dir)
         self.ipython_bin = path.join(self.dir, 'bin', 'ipython')
@@ -27,6 +27,7 @@ class IPythonEnvironment:
         self.profile_args = list(profile_args) if profile_args else []
 
         self.validate_dir()
+        self.static_dir = static_dir or self.get_static_dir()
         self.resolve_invariants()
 
     @property
@@ -40,6 +41,11 @@ class IPythonEnvironment:
     @property
     def location_path(self):
         return path.join(app.instance_path, self.name, 'location')
+
+    def get_static_dir(self):
+        return subprocess.check_output(
+            [self.ipython_bin, '-c', "import IPython.html; print(IPython.html.DEFAULT_STATIC_FILES_PATH)"]
+        )
 
     def validate_dir(self):
         if not (path.isfile(self.ipython_bin) and access(self.ipython_bin, X_OK)):
