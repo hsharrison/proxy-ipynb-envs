@@ -45,7 +45,14 @@ class IPythonEnvironment:
         if not (path.isfile(self.ipython_bin) and access(self.ipython_bin, X_OK)):
             raise NotAnEnvironment(self.dir)
 
+    def create_location_dir(self):
+        subprocess.check_call(
+            ['mkdir', '-p', path.join(app.instance_path, 'ipython-locations', self.name)]
+        )
+
     def resolve_invariants(self):
+        self.create_location_dir()
+
         # Does the profile exist?
         try:
             self.get_profile_path()
