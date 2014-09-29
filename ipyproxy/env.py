@@ -101,7 +101,7 @@ class IPythonEnvironment:
 
     def write_location(self):
         with open(self.location_path, 'r') as file:
-            file.write(render_template('ipython_location', app=app, env=self))
+            file.write(nginx.env_location_block(self))
         nginx.reload()
 
     def create_profile(self):

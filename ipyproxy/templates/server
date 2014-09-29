@@ -1,8 +1,0 @@
-location {{ app.config.BASE_URL }} {
-  proxy_pass      {{ app.config.PREFERRED_URL_SCHEME }}://{{ app.config.SERVER_NAME }}/;
-  proxy_redirect  default;
-
-  include         {{ app.instance_path }}/proxy_headers;
-}
-
-include {{ app.instance_path }}/ipython-locations/*;
